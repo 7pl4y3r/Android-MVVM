@@ -9,10 +9,16 @@ import androidx.lifecycle.LiveData;
 
 public class NoteRepository {
 
+
+    private static final int insertOperation = 1;
+    private static final int updateOperation = 2;
+    private static final int deleteOperation = 3;
+    private static final int deleteAllOperation = 4;
+
+
     private NoteDao noteDao;
     private LiveData<List<Note>> allNotes;
 
-    private int operationId = -1;
 
     public NoteRepository(Application application) {
 
@@ -24,15 +30,19 @@ public class NoteRepository {
 
 
     public void insert(Note note) {
+        new NoteAsyncTask(noteDao, insertOperation).execute(note);
     }
 
     public void update(Note note) {
+        new NoteAsyncTask(noteDao, updateOperation).execute(note);
     }
 
     public void delete(Note note) {
+        new NoteAsyncTask(noteDao, deleteOperation).execute(note);
     }
 
-    public void deleteAllNotes(Note note) {
+    public void deleteAllNotes() {
+        new NoteAsyncTask(noteDao, deleteAllOperation).execute();
     }
 
 
@@ -40,16 +50,12 @@ public class NoteRepository {
         return allNotes;
     }
 
-    public int getOperationId() {
-        return operationId;
-    }
-
-    private static class BasicNoteAsyncTask extends AsyncTask<Note, Void, Void> {
+    private static class NoteAsyncTask extends AsyncTask<Note, Void, Void> {
 
         private NoteDao noteDao;
         private int operationId;
 
-        public BasicNoteAsyncTask(NoteDao noteDao, int operationId) {
+        public NoteAsyncTask(NoteDao noteDao, int operationId) {
             this.noteDao = noteDao;
             this.operationId = operationId;
         }
@@ -59,19 +65,19 @@ public class NoteRepository {
 
             switch (operationId) {
 
-                case 1:
+                case NoteRepository.insertOperation:
                     noteDao.insert(notes[0]);
                     return null;
 
-                case 2:
+                case NoteRepository.updateOperation:
                     noteDao.update(notes[0]);
                     return null;
 
-                case 3:
+                case NoteRepository.deleteOperation:
                     noteDao.delete(notes[0]);
                     return null;
 
-                case 4:
+                case NoteRepository.deleteAllOperation:
                     noteDao.deleteAllNotes();
                     return null;
 
@@ -81,6 +87,7 @@ public class NoteRepository {
             }
 
         }
+
     }
 
 }
